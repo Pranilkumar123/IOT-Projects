@@ -149,6 +149,4 @@ Each project includes:
 | 4 | Line Following Robot | Teaches sensor calibration and PID logic |
 | 5 | Weather Station (DHT11 + OLED + Blynk) | Teaches data display and cloud integration |
 
----
 
-## 🗂️ Repository Structure
