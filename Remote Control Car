@@ -1,0 +1,128 @@
+# 🚗 Remote Controlled Car (Bluetooth)
+
+![Status](https://img.shields.io/badge/Status-Completed-brightgreen)
+![Arduino](https://img.shields.io/badge/Arduino-Uno-00979C?logo=arduino&logoColor=white)
+![Bluetooth](https://img.shields.io/badge/Bluetooth-HC--05-blue)
+
+## 📌 Overview
+
+This is a **wireless remote-controlled robot car** built using an **Arduino Uno**, **HC-05 Bluetooth module**, and an **L298N motor driver**. It can be controlled from any smartphone using a custom-built MIT App Inventor app or a generic Bluetooth terminal application.
+
+The car supports full movement control, including forward, backward, left, right, and stop functions, with speed control using PWM.
+
+---
+
+## 🎯 Features
+
+- 📱 **Wireless Control** via Smartphone (Bluetooth)
+- 🔄 **Full Movement**: Forward, Backward, Left, Right, Stop
+- 💨 **Speed Control** using PWM (Pulse Width Modulation)
+- 🔋 **Dual Power Supply**: Arduino powered via USB/9V battery; Motors powered by 18650 Li-Ion battery pack
+- 🧩 **Modular Design**: Easy to add sensors (Ultrasonic, IR) for upgrades
+
+---
+
+## 🛠️ Components Used
+
+| Component | Quantity | Purpose |
+|-----------|----------|---------|
+| Arduino Uno R3 | 1 | Main Microcontroller (Brain of the car) |
+| HC-05 Bluetooth Module | 1 | Receives wireless commands from phone |
+| L298N Motor Driver Module | 1 | Controls the DC motors (Speed & Direction) |
+| BO DC Motors | 2 | Drives the rear wheels |
+| Robot Car Chassis | 1 | Mechanical body of the car |
+| Wheels (2) + Castor Wheel (1) | 1 Set | Movement and balance |
+| 18650 Li-Ion Battery (3.7V) | 2 | Powers the L298N and motors |
+| 9V Battery (with Arduino connector) | 1 | Optional: Powers Arduino separately |
+| Jumper Wires (M-M, F-M, F-F) | Multiple | All electrical connections |
+| Breadboard | 1 | For prototyping connections |
+
+---
+
+## 🔌 Circuit Diagram & Wiring Instructions
+
+*(Insert your circuit diagram screenshot here)*
+
+### Wiring Table (Component-by-Component)
+
+| Component | Pin | ➡️ | Arduino Pin / Connection |
+|-----------|-----|----|--------------------------|
+| **HC-05 (Bluetooth)** | VCC | ➡️ | Arduino **5V** |
+| | GND | ➡️ | Arduino **GND** |
+| | TX | ➡️ | Arduino **Pin 0 (RX)** |
+| | RX | ➡️ | Arduino **Pin 1 (TX)** *(⚠️ Use a voltage divider for safety)* |
+| **L298N (Motor Driver)** | ENA | ➡️ | Arduino **Pin 9** (PWM Speed Control - Left Motor) |
+| | IN1 | ➡️ | Arduino **Pin 4** (Direction) |
+| | IN2 | ➡️ | Arduino **Pin 5** (Direction) |
+| | IN3 | ➡️ | Arduino **Pin 6** (Direction) |
+| | IN4 | ➡️ | Arduino **Pin 7** (Direction) |
+| | ENB | ➡️ | Arduino **Pin 10** (PWM Speed Control - Right Motor) |
+| | +12V | ➡️ | **18650 Battery Pack (+)** (Motor Power) |
+| | GND | ➡️ | **18650 Battery Pack (-)** & Arduino **GND** *(Common Ground!)* |
+| **Motor A (Left)** | Wire 1 | ➡️ | L298N **OUT1** |
+| | Wire 2 | ➡️ | L298N **OUT2** |
+| **Motor B (Right)** | Wire 1 | ➡️ | L298N **OUT3** |
+| | Wire 2 | ➡️ | L298N **OUT4** |
+
+---
+
+## 📟 Arduino Code
+
+The complete Arduino code is available in the same folder as [`Remote_Control_Car.ino`](./Remote_Control_Car.ino).
+
+### Code Snippet (Core Logic)
+
+```cpp
+// Motor control pins
+int enA = 9;
+int in1 = 4;
+int in2 = 5;
+int in3 = 6;
+int in4 = 7;
+int enB = 10;
+char command;
+
+void setup() {
+  pinMode(enA, OUTPUT); pinMode(enB, OUTPUT);
+  pinMode(in1, OUTPUT); pinMode(in2, OUTPUT);
+  pinMode(in3, OUTPUT); pinMode(in4, OUTPUT);
+  Serial.begin(9600); // HC-05 default baud rate
+}
+
+void loop() {
+  if (Serial.available() > 0) {
+    command = Serial.read();
+    stopCar();
+    switch(command) {
+      case 'F': // Forward
+        digitalWrite(in1, HIGH); digitalWrite(in2, LOW);
+        digitalWrite(in3, HIGH); digitalWrite(in4, LOW);
+        analogWrite(enA, 200); analogWrite(enB, 200);
+        break;
+      case 'B': // Backward
+        digitalWrite(in1, LOW); digitalWrite(in2, HIGH);
+        digitalWrite(in3, LOW); digitalWrite(in4, HIGH);
+        analogWrite(enA, 200); analogWrite(enB, 200);
+        break;
+      case 'L': // Left Turn
+        digitalWrite(in1, LOW); digitalWrite(in2, HIGH);
+        digitalWrite(in3, HIGH); digitalWrite(in4, LOW);
+        analogWrite(enA, 200); analogWrite(enB, 200);
+        break;
+      case 'R': // Right Turn
+        digitalWrite(in1, HIGH); digitalWrite(in2, LOW);
+        digitalWrite(in3, LOW); digitalWrite(in4, HIGH);
+        analogWrite(enA, 200); analogWrite(enB, 200);
+        break;
+      case 'S': // Stop (handled by stopCar() call)
+        break;
+      default: break;
+    }
+  }
+}
+
+void stopCar() {
+  digitalWrite(in1, LOW); digitalWrite(in2, LOW);
+  digitalWrite(in3, LOW); digitalWrite(in4, LOW);
+  analogWrite(enA, 0); analogWrite(enB, 0);
+}
